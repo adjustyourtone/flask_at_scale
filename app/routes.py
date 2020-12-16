@@ -1,6 +1,6 @@
 from flask import jsonify, abort, request, redirect
 from app import app
-# from app.models import Student, Teacher, Lesson
+from app.models import Movie, Actor
 
 #----------------------------------------------------------------------------#
 # Routes
