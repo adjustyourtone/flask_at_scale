@@ -5,7 +5,7 @@ dbUser = 'postgres'
 dbPass = 'root'
 dbHost = 'localhost'
 dbPort = 5432
-dbName = 'smt_database'
+dbName = 'castingagency'
 
 
 class Config:

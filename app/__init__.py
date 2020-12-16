@@ -1,7 +1,8 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import DateTime
 from flask_cors import CORS
-# from flask_migrate import Migrate, migrate
+from flask_migrate import Migrate
 from app.config import config
 
 
@@ -11,7 +12,7 @@ from app.config import config
 app = Flask(__name__)
 app.config.from_object(config['development'])
 db = SQLAlchemy(app)
-# migrate = Migrate(app, db)
+migrate = Migrate(app, db)
 
 # Implement CORS
 CORS(app, resources=r'/api/*')
