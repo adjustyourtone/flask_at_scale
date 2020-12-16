@@ -1,4 +1,4 @@
-from app import db, DateTime
+from app import db
 
 
 class Actor(db.Model):
@@ -39,7 +39,7 @@ class Movie(db.Model):
     __tablename__ = 'movie'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String())
-    release_date = db.Column(DateTime)
+    release_date = db.Column(db.String())
 
     def __repr__(self):
         return '<Movie {} {}>'.format(self.title, self.release_date)
