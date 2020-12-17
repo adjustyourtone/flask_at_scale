@@ -1,7 +1,7 @@
 from flask import json, jsonify, abort, request, redirect
 from app import app
 from app.models import Movie, Actor
-
+from app.auth.auth import AuthError, get_token_auth_header, requires_auth
 #----------------------------------------------------------------------------#
 # Routes
 #----------------------------------------------------------------------------#
