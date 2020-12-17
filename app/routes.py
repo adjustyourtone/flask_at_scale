@@ -1,7 +1,7 @@
-from flask import json, jsonify, abort, request, redirect
+from flask import json, jsonify, abort, request
 from app import app
 from app.models import Movie, Actor
-from app.auth.auth import AuthError, get_token_auth_header, requires_auth
+from app.auth.auth import AuthError, requires_auth
 #----------------------------------------------------------------------------#
 # Routes
 #----------------------------------------------------------------------------#
@@ -14,6 +14,7 @@ def index():
 
 # Define a route to get all Actors (/actors)
 @app.route('/api/actors')
+@requires_auth('get:actors')
 def get_actors():
     """This endpoint will retrieve all actors."""
     actors = Actor.query.all()
@@ -182,3 +183,13 @@ def update_movies(id):
             'success': True,
             'deleted': movie.format()
         }), 200
+
+
+# Error Handlers
+@app.errorhandler(AuthError)
+def process_AuthError(error):
+    """AuthError effor handler."""
+    response = jsonify(error.error)
+    response.status_code = error.status_code
+
+    return response
