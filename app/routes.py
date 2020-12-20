@@ -1,7 +1,7 @@
 from flask import json, jsonify, abort, request
 from app import app
 from app.models import Movie, Actor
-from app.auth.auth import AuthError, requires_auth
+from app.auth.auth import AuthError, get_token_auth_header, requires_auth, AUTH0_DOMAIN, CLIENT_ID, API_AUDIENCE, REDIRECT_URL
 #----------------------------------------------------------------------------#
 # Routes
 #----------------------------------------------------------------------------#
@@ -15,19 +15,20 @@ def index():
 # Define a route to get all Actors (/actors)
 @app.route('/api/actors')
 @requires_auth('get:actors')
-def get_actors():
+def get_actors(payload):
     """This endpoint will retrieve all actors."""
     actors = Actor.query.all()
 
     return jsonify({
         'success': True,
         'actors': [actor.format() for actor in actors]
-    })
+    }), 200
 
 
 # Define a route to get all Movies (/movies)
 @app.route('/api/movies')
-def get_movies():
+@requires_auth('get:movies')
+def get_movies(payload):
     """This endpoint will retrieve all movies."""
     movies = Movie.query.all()
 
@@ -39,6 +40,7 @@ def get_movies():
 
 # Create a route to view an actor by ID
 @app.route('/api/actors/<int:id>', methods=['GET'])
+@requires_auth('get:actors')
 def view_actor(id):
     """This endpoint will show an actor by ID"""
     actor = Actor.query.get(id)
@@ -51,6 +53,7 @@ def view_actor(id):
 
 # Create a route to view a movie by ID
 @app.route('/api/movies/<int:id>', methods=['GET'])
+@requires_auth('get:movies')
 def view_movie(id):
     """This endpoint will show a movie by ID"""
     movie = Movie.query.get(id)
@@ -63,6 +66,7 @@ def view_movie(id):
 
 # Define a route to Create Actors (/actors)
 @app.route('/api/actors', methods=['POST'])
+@requires_auth('post:actor')
 def create_actor():
     """This endpoint will allow the creation of a new actor."""
     data = request.get_json()
@@ -183,6 +187,20 @@ def update_movies(id):
             'success': True,
             'deleted': movie.format()
         }), 200
+
+
+# Genereate new Access Tokens
+@app.route("/authorization/url", methods=["GET"])
+def generate_auth_url():
+    """This endpoint will allow you to generate an auth URL"""
+    url = f'https://{AUTH0_DOMAIN}/authorize' \
+        f'?audience={API_AUDIENCE}' \
+        f'&response_type=token&client_id=' \
+        f'{CLIENT_ID}&redirect_uri=' \
+        f'{REDIRECT_URL}'
+    return jsonify({
+        'url': url
+    })
 
 
 # Error Handlers

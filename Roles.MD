@@ -1,0 +1,23 @@
+Role sign-in:
+
+Assistant:
+email: assistant@castingagency.com
+pwd: CastingAgency1
+JWT: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYtQ3JfdlZZREVzLUZ4LUxWTUdUdyJ9.eyJpc3MiOiJodHRwczovL2Rldi1iZHo2bWY0Mi51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NWZkZWE4Y2ZiYmM0ZjkwMDZmMWY0ZWJkIiwiYXVkIjoiQ2FzdGluZ0FnZW5jeSIsImlhdCI6MTYwODQ4MDAxNiwiZXhwIjoxNjA4NDg3MjE2LCJhenAiOiJ5aW9EcVl5ZDBvM3AxOHoxSndCVW16RUl5MTY4ZkVBcSIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZ2V0OmFjdG9ycyIsImdldDptb3ZpZXMiXX0.DsvIpBbzLmM3Fh_IGgFeBYZjBePPhy-QC63Ae5zeK5WYUzn5_NPWBo3GziomsZMBAsA6EBZsq4AH3_y52h8zlg6Pf3n7dtOEc3Uo1bRZBRlVTIze7P0nsWs82BfHDt64YNtcRBYGREmAwwScUCotLtuulnUMxdIBquaX3RIcPixhMwONUavMp_xTcRdEO_OGcAEdIgyxV7-YE5sZ0vdlqCcryRXv1xH1FU-DOaBdQMX0pwTiLKxBxdfNE0zyQKn2SEjrlsBWZ0_2FHSxx_F0k89xkpGh5aio9lFKyurt5n18WxdrkpuFo3jwiBj5WzBjnp0fim6i4DHexweK9GtahA
+
+Director:
+email: director@castingagency.com
+pwd: CastingAgency1
+
+Producer:
+email: producer@castingagency.com
+pwd: CastingAgency1
+
+curl --request POST \
+ --url 'https://dev-bdz6mf42.us.auth0.com/oauth/token' \
+ --header 'content-type: application/x-www-form-urlencoded' \
+ --data grant_type=authorization_code \
+ --data 'client_id=IMRwjFMVw1rIxgDzs01Zy4V37tIyRyH0' \
+ --data client_secret=2nyAhvW17FdYSyNcz8Kv_h_nHC3RKOBWFiwCu4BmqpajDELWMdG8b-Zv8AZm56V9 \
+ --data code=BseX2YzcReno8ozL \
+ --data 'redirect_uri=http://localhost:5000'

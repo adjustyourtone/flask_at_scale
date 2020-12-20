@@ -1,4 +1,4 @@
-
+import os
 import json
 from flask import request, _request_ctx_stack, abort
 from functools import wraps
@@ -8,8 +8,9 @@ from urllib.request import urlopen
 
 AUTH0_DOMAIN = 'dev-bdz6mf42.us.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = 'http://localhost:5000'  # unique identifier
-CLIENT_ID = 'zQ4gPQlHOZT0WZwj2stRqj97r1rIS0cq'
+API_AUDIENCE = 'CastingAgency'  # unique identifier
+CLIENT_ID = 'yioDqYyd0o3p18z1JwBUmzEIy168fEAq'
+REDIRECT_URL = 'http://localhost:5000'
 
 # Error handler
 
@@ -28,7 +29,7 @@ def get_token_auth_header():
     if not auth_header:
         raise AuthError({"code": "missing_authorization_header",
                          "description":
-                         "Authorization header is missing"}, 401)
+                         "Authorization header is missing!"}, 401)
     header_parts = auth_header.split(' ')
 
     # make sure header is in the correct format
