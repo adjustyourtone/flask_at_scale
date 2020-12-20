@@ -1,7 +1,7 @@
 from flask import json, jsonify, abort, request
 from app import app
 from app.models import Movie, Actor
-from app.auth.auth import AuthError, get_token_auth_header, requires_auth, AUTH0_DOMAIN, CLIENT_ID, API_AUDIENCE, REDIRECT_URL
+from app.auth.auth import AuthError, get_token_auth_header, requires_auth, AUTH0_DOMAIN, CLIENT_ID, API_AUDIENCE, REDIRECT_URL, LOGOUT_URL
 #----------------------------------------------------------------------------#
 # Routes
 #----------------------------------------------------------------------------#
@@ -10,6 +10,11 @@ from app.auth.auth import AuthError, get_token_auth_header, requires_auth, AUTH0
 @app.route('/')
 def index():
     return 'Healthy'
+
+
+@app.route('/logout')
+def logout():
+    return 'You are logged out'
 
 
 # Define a route to get all Actors (/actors)
@@ -41,7 +46,7 @@ def get_movies(payload):
 # Create a route to view an actor by ID
 @app.route('/api/actors/<int:id>', methods=['GET'])
 @requires_auth('get:actors')
-def view_actor(id):
+def view_actor(payload, id):
     """This endpoint will show an actor by ID"""
     actor = Actor.query.get(id)
 
@@ -54,7 +59,7 @@ def view_actor(id):
 # Create a route to view a movie by ID
 @app.route('/api/movies/<int:id>', methods=['GET'])
 @requires_auth('get:movies')
-def view_movie(id):
+def view_movie(payload, id):
     """This endpoint will show a movie by ID"""
     movie = Movie.query.get(id)
 
@@ -67,7 +72,7 @@ def view_movie(id):
 # Define a route to Create Actors (/actors)
 @app.route('/api/actors', methods=['POST'])
 @requires_auth('post:actor')
-def create_actor():
+def create_actor(payload):
     """This endpoint will allow the creation of a new actor."""
     data = request.get_json()
 
@@ -88,51 +93,53 @@ def create_actor():
     }), 200
 
 
-# define a route that can Patch and Delete actors by ID
-@app.route('/api/actors/<int:id>', methods=['PATCH', 'DELETE'])
-def update_actor(id):
-    """This endpoint will allow one to edit or delete an actor"""
-    if request.method == 'PATCH':
+# define a route that can Patch actors by ID
+@app.route('/api/actors/<int:id>', methods=['PATCH'])
+@requires_auth('patch:actor')
+def update_actor(payload, id):
+    """This endpoint will allow one to edit an actor"""
+    actor = Actor.query.get(id)
 
-        actor = Actor.query.get(id)
+    if actor is None:
+        abort(404)
 
-        if actor is None:
-            abort(404)
+    data = request.get_json()
 
-        data = request.get_json()
+    if 'name' in data:
+        actor.name = data['name']
+    if 'age' in data:
+        actor.age = data['age']
+    if 'gender' in data:
+        actor.gender = data['gender']
 
-        if 'name' in data:
-            actor.name = data['name']
+    actor.update()
 
-        if 'age' in data:
-            actor.age = data['age']
+    return jsonify({
+        'success': True,
+        'actor': actor.format()
+    }), 200
 
-        if 'gender' in data:
-            actor.gender = data['gender']
 
-        actor.update()
+# Define a route that can Delete actors by ID
+@app.route('/api/actors/<int:id>', methods=['DELETE'])
+@requires_auth('delete:actor')
+def delete_actor(payload, id):
+    actor = Actor.query.get(id)
 
-        return jsonify({
-            'success': True,
-            'actor': actor.format()
-        }), 200
+    if actor is None:
+        abort(404)
 
-    if request.method == 'DELETE':
-        actor = Actor.query.get(id)
+    actor.delete()
 
-        if actor is None:
-            abort(404)
-
-        actor.delete()
-
-        return jsonify({
-            'success': True,
-            'delete': actor.format()
-        }), 200
+    return jsonify({
+        'success': True,
+        'delete': actor.format()
+    }), 200
 
 
 # Define a route to Create Movies (/movies)
 @app.route('/api/movies', methods=['POST'])
+@requires_auth('post:movie')
 def create_movies():
     """This endpoint will allow the creation of a new movie."""
     data = request.get_json()
@@ -189,7 +196,7 @@ def update_movies(id):
         }), 200
 
 
-# Genereate new Access Tokens
+# Genereate an Auth0 login session
 @app.route("/authorization/url", methods=["GET"])
 def generate_auth_url():
     """This endpoint will allow you to generate an auth URL"""
@@ -203,8 +210,20 @@ def generate_auth_url():
     })
 
 
+# Logout of Auth0
+@app.route('/authorization/logout', methods=['GET'])
+def generate_logout_url():
+    """This endpoint will clear your Auth0 session."""
+    url = f'https://{AUTH0_DOMAIN}/v2/logout?federated&' \
+        f'client_id={CLIENT_ID}&returnTo={LOGOUT_URL}'
+
+    return jsonify({
+        'logout_url': url
+    })
+
+
 # Error Handlers
-@app.errorhandler(AuthError)
+@ app.errorhandler(AuthError)
 def process_AuthError(error):
     """AuthError effor handler."""
     response = jsonify(error.error)

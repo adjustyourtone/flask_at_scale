@@ -11,10 +11,10 @@ ALGORITHMS = ['RS256']
 API_AUDIENCE = 'CastingAgency'  # unique identifier
 CLIENT_ID = 'yioDqYyd0o3p18z1JwBUmzEIy168fEAq'
 REDIRECT_URL = 'http://localhost:5000'
+LOGOUT_URL = 'http://localhost:5000/logout'
+
 
 # Error handler
-
-
 class AuthError(Exception):
     def __init__(self, error, status_code):
         """Defines an Authentication Error"""
