@@ -1,7 +1,7 @@
 from flask import json, jsonify, abort, request
 from app import app
 from app.models import Movie, Actor
-from app.auth.auth import AuthError, get_token_auth_header, requires_auth, AUTH0_DOMAIN, CLIENT_ID, API_AUDIENCE, REDIRECT_URL, LOGOUT_URL
+from app.auth.auth import AuthError, requires_auth, AUTH0_DOMAIN, CLIENT_ID, API_AUDIENCE, REDIRECT_URL, LOGOUT_URL
 #----------------------------------------------------------------------------#
 # Routes
 #----------------------------------------------------------------------------#
@@ -12,9 +12,37 @@ def index():
     return 'Healthy'
 
 
+# Genereate an Auth0 login session URL
+@app.route("/authorization/url", methods=["GET"])
+def generate_auth_url():
+    """This endpoint will allow you to generate an auth URL"""
+    url = f'https://{AUTH0_DOMAIN}/authorize' \
+        f'?audience={API_AUDIENCE}' \
+        f'&response_type=token&client_id=' \
+        f'{CLIENT_ID}&redirect_uri=' \
+        f'{REDIRECT_URL}'
+    return jsonify({
+        'message': 'Click this link to sign in with the provided credentials.',
+        'url': url
+    })
+
+
+# Logout of Auth0 session
+@app.route('/authorization/logout', methods=['GET'])
+def generate_logout_url():
+    """This endpoint will clear your Auth0 session."""
+    url = f'https://{AUTH0_DOMAIN}/v2/logout?federated&' \
+        f'client_id={CLIENT_ID}&returnTo={LOGOUT_URL}'
+
+    return jsonify({
+        'logout_url': url
+    })
+
+
+# A logout redirect with JS.
 @app.route('/logout')
 def logout():
-    return 'You are logged out'
+    return f"<html><body><p>You are logged out and will return home in 3 seconds.</p><script>var timer = setTimeout(function() {{window.location='{ '/' }'}}, 3000);</script></body></html>"
 
 
 # Define a route to get all Actors (/actors)
@@ -140,7 +168,7 @@ def delete_actor(payload, id):
 # Define a route to Create Movies (/movies)
 @app.route('/api/movies', methods=['POST'])
 @requires_auth('post:movie')
-def create_movies():
+def create_movies(payload):
     """This endpoint will allow the creation of a new movie."""
     data = request.get_json()
 
@@ -160,66 +188,43 @@ def create_movies():
     }), 200
 
 
-# Define a route to Patch and Update movies by ID
-@app.route('/api/movies/<int:id>', methods=['PATCH', 'DELETE'])
-def update_movies(id):
+# Define a route to Patch movies by ID
+@app.route('/api/movies/<int:id>', methods=['PATCH'])
+@requires_auth('patch:movie')
+def update_movies(payload, id):
     """This endpoint will allow one to edit or delete a movie."""
-    if request.method == 'PATCH':
-        movie = Movie.query.get(id)
+    movie = Movie.query.get(id)
 
-        if movie is None:
-            abort(404)
+    if movie is None:
+        abort(404)
 
-        data = request.get_json()
+    data = request.get_json()
 
-        if 'title' in data:
-            movie.title = data['title']
+    if 'title' in data:
+        movie.title = data['title']
+    if 'release_date' in data:
+        movie.release_date = data['release_date']
 
-        if 'release_date' in data:
-            movie.release_date = data['release_date']
-
-        movie.update()
-
-        return jsonify({
-            'success': True,
-            'movie': movie.format()
-        }), 200
-
-    if request.method == 'DELETE':
-        movie = Movie.query.get(id)
-
-        movie.delete()
-
-        return jsonify({
-            'success': True,
-            'deleted': movie.format()
-        }), 200
-
-
-# Genereate an Auth0 login session
-@app.route("/authorization/url", methods=["GET"])
-def generate_auth_url():
-    """This endpoint will allow you to generate an auth URL"""
-    url = f'https://{AUTH0_DOMAIN}/authorize' \
-        f'?audience={API_AUDIENCE}' \
-        f'&response_type=token&client_id=' \
-        f'{CLIENT_ID}&redirect_uri=' \
-        f'{REDIRECT_URL}'
-    return jsonify({
-        'url': url
-    })
-
-
-# Logout of Auth0
-@app.route('/authorization/logout', methods=['GET'])
-def generate_logout_url():
-    """This endpoint will clear your Auth0 session."""
-    url = f'https://{AUTH0_DOMAIN}/v2/logout?federated&' \
-        f'client_id={CLIENT_ID}&returnTo={LOGOUT_URL}'
+    movie.update()
 
     return jsonify({
-        'logout_url': url
-    })
+        'success': True,
+        'movie': movie.format()
+    }), 200
+
+
+# Create an endpoint to Delete a Movie
+@app.route('/api/movies/<int:id>', methods=['DELETE'])
+@requires_auth('delete:movie')
+def delete_movie(payload, id):
+    movie = Movie.query.get(id)
+
+    movie.delete()
+
+    return jsonify({
+        'success': True,
+        'deleted': movie.format()
+    }), 200
 
 
 # Error Handlers
