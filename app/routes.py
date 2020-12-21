@@ -228,10 +228,60 @@ def delete_movie(payload, id):
 
 
 # Error Handlers
-@ app.errorhandler(AuthError)
+@app.errorhandler(AuthError)
 def process_AuthError(error):
     """AuthError effor handler."""
     response = jsonify(error.error)
     response.status_code = error.status_code
 
     return response
+
+
+@app.errorhandler(422)
+def unprocessable(error):
+    """Unprocessable entity error handeler."""
+    return jsonify({
+        "success": False,
+        "error": 422,
+        "message": "This is an unprocessable entity."
+    }), 422
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    """Bad request error handler."""
+    return jsonify({
+        "success": False,
+        "error": 422,
+        "message": "Bad Request. Please verify the information you submitted is correct and try again."
+    }), 400
+
+
+@app.errorhandler(401)
+def unauthorized(error):
+    """Unauthorized attempt error handler."""
+    return jsonify({
+        "success": False,
+        "error": 401,
+        "message": "Unauthorized attempt."
+    }), 401
+
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    """Internal server error error handler."""
+    return jsonify({
+        "success": False,
+        "error": 500,
+        "message": "Internal server error. Please try again."
+    }), 500
+
+
+@app.errorhandler(404)
+def resource_not_found(error):
+    """Resource not found error handler."""
+    return jsonify({
+        'success': False,
+        'error': 404,
+        'message': 'This resoure has not been found.'
+    }), 404
