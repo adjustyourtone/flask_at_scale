@@ -6,13 +6,14 @@ from flask_migrate import Migrate
 from models import setup_db, Movie, Actor
 from auth.auth import AUTH0_DOMAIN, CLIENT_ID, REDIRECT_URL, LOGOUT_URL, API_AUDIENCE, AuthError, requires_auth
 
-db = SQLAlchemy()
 
+app = Flask(__name__)
+db = SQLAlchemy()
+migrate = Migrate(app, db)
 
 def create_app(test_config=None):
-    app = Flask(__name__)
+    app
     setup_db(app)
-    migrate = Migrate(app, db)
     CORS(app, resources={r"/api/*"})
 
     @app.after_request
@@ -305,3 +306,10 @@ def create_app(test_config=None):
             "error": 500,
             "message": "Internal server error. Please try again."
         }), 500
+
+
+
+APP = create_app()
+
+if __name__ == '__main__':
+    APP.run()
